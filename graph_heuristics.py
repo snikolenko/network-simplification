@@ -138,7 +138,6 @@ def routing_equivalent_multi(G_input):
 	G = G_input.copy()
 	num_routeeq_applied = 0
 	do_routeeq = True
-	# my_print('%d' % full_cap_multi(G))
 	while do_routeeq:
 		do_routeeq = False
 		for u,v,k in G.edges_iter(keys=True):
@@ -147,28 +146,23 @@ def routing_equivalent_multi(G_input):
 				total_in = np.sum([ dd['capacity'] for uu,vv,kk,dd in G.in_edges(u,keys=True,data=True) if uu != vv])
 				total_out = np.sum([ dd['capacity'] for uu,vv,kk,dd in G.out_edges(v,keys=True,data=True) if uu != vv])
 				if c >= total_out or c >= total_in:
-					# print u,v,k,c,total_out,total_in
 					num_routeeq_applied += 1
 					do_routeeq = True
 					if c >= total_out:
-						# my_print('Can apply to (%d,%d) with capacity %d >= total out %d; rewiring %d edges' % (u,v, c, total_out, np.sum([len(G.edge[uu][vv]) for uu,vv in G.out_edges(v)])))
 						for uu,vv,kk,dd in G.out_edges(v, keys=True, data=True):
 							G.add_edge(u, vv, len(G.edge[u].get(vv,{})), dd)
 						for uu,vv,kk,dd in G.in_edges(v, keys=True, data=True):
 							if uu != u or kk != k:
 								G.add_edge(uu, u, len(G.edge[uu].get(u,{})), dd)
 						G.remove_node(v)
-						# my_print('%d' % full_cap_multi(G))
 						break
 					if c >= total_in:
-						# my_print('Can apply to (%d,%d) with capacity %d >= total out %d; rewiring %d edges' % (u,v, c, total_out, np.sum([len(G.edge[uu][vv]) for uu,vv in G.in_edges(u)])))
 						for uu,vv,kk,dd in G.in_edges(u, keys=True, data=True):
 							G.add_edge(uu, v, len(G.edge[uu].get(v,{})), dd)
 						for uu,vv,kk,dd in G.out_edges(u, keys=True, data=True):
 							if vv != v or kk != k:
 								G.add_edge(v, vv, len(G.edge[v].get(vv,{})), dd)
 						G.remove_node(u)
-						# my_print('%d' % full_cap_multi(G))
 						break
 				if do_routeeq:
 					break
@@ -194,20 +188,17 @@ def routing_violating_multi(G_input):
 			for u,v,k in G.edges_iter(keys=True):
 				if u>=0 and v<DEST_INT:
 					if u == v:
-						# my_print('\t\tremoving loops at vertex %d' % u)
 						G.remove_edges_from([(u, v, k) for k in G.edge[u][v]])
 						do_insideloop = True
 						do_routeineq = True
 						break
 					if len(G.edge[u][v]) > 1:
-						# my_print('\t\tcompressing multiple edges from %d to %d' % (u, v))
 						tot = np.sum([x['capacity'] for x in G.edge[u][v].values()])
 						G.remove_edges_from([(u, v, k) for k in G.edge[u][v]])
 						G.add_edge(u, v, 0, {'capacity' : tot, 'weight' : 1})					
 						do_insideloop = True
 						do_routeineq = True
 						break
-		# my_print('\tafter roineq |V|=%d, |E|=%d, total cap=%d' % (G.number_of_nodes(), G.number_of_edges(), full_cap_multi(G)))
 	return G, numIter
 
 def tradeoff(G_input, func_equiv=routing_violating_multi):
@@ -218,9 +209,7 @@ def tradeoff(G_input, func_equiv=routing_violating_multi):
 	while do_tradeoff:
 		numIter += 1
 		do_tradeoff = False
-		# my_print('Iteration %d:' % numIter)
 		G, num_routeviol = func_equiv(G)
-		# my_print('\treduced in %d iterations to |V|=%d, |E|=%d' % (num_routeviol, G.number_of_nodes(), G.number_of_edges()))
 		edges_candidates = [(u,v,k,d['capacity']) for u,v,k,d in G.edges_iter(keys=True,data=True) if u>=0 and v<DEST_INT and candidate_filter_edge(G, u, v)]
 		if len(edges_candidates) > 0:
 			do_tradeoff = True
@@ -230,7 +219,6 @@ def tradeoff(G_input, func_equiv=routing_violating_multi):
 			cand_amin = np.argmin(np.min(np.vstack([np.array(cand_Ie)-np.array(cand_c), np.array(cand_Oe)-np.array(cand_c)]), axis=0))
 			cand_toadd = min(cand_Ie[cand_amin]-cand_c[cand_amin], cand_Oe[cand_amin]-cand_c[cand_amin])
 			u,v,k,c = edges_candidates[cand_amin]
-			# my_print('\tadding %d to edge (%d, %d) with cap %d' % ( cand_toadd, u, v, c ))
 			total_added_cap += cand_toadd
 			G.edge[u][v][k]['capacity'] = c + cand_toadd
 	return G, numIter, total_added_cap

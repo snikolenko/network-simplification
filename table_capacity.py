@@ -22,7 +22,7 @@ for max_capacity in [5, 10, 20, 50]:
 	Gwpp, num_wpp_applied, res_totalcap_wpp = WPP(Gfull)
 	Gdagopt, num_dagopt_applied, res_totalcap_dagopt = DAGOPT(Gfull)
 
-	print 'fattree & %d & %d & %d & %d & %d & %d & %d & %d \\\\' % ( Gfull.number_of_nodes(), Gfull.number_of_edges(), max_capacity, init_totalcap, num_wpp_applied, res_totalcap_wpp, num_dagopt_applied, res_totalcap_dagopt )
+	print '%s & %d & %d & %d & %d & %d & %d & %d & %d \\\\' % ( in_fname, Gfull.number_of_nodes(), Gfull.number_of_edges(), max_capacity, init_totalcap, num_wpp_applied, res_totalcap_wpp, num_dagopt_applied, res_totalcap_dagopt )
 
 
 exit(0)
